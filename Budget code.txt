@@ -1,0 +1,121 @@
+** start of main.py **
+
+class Category:
+    def __init__(self, name):
+        
+
+        self.name = name
+        self.ledger = []
+    
+    def deposit(self, amount, description = ""):
+        self.ledger.append({'amount': amount, 'description': description})
+
+    def check_funds(self,amount):
+        if sum(item["amount"] for item in self.ledger) >= amount:
+            return True 
+        else:
+            return False
+
+    def withdraw(self, amount, description = ""):
+        if self.check_funds(amount):
+            self.ledger.append({'amount': -amount, 'description': description})        
+            return True
+        else:
+            return False
+
+    def get_balance(self):
+        balance = sum(item["amount"] for item in self.ledger)
+        return balance
+
+    def transfer(self,amount,Category):
+        if self.check_funds(amount):
+            self.withdraw(amount, f"Transfer to {Category.name}")            
+            Category.deposit(amount, f"Transfer from {self.name}")          
+            return True
+        else:
+            return False
+
+    def __str__(self):
+        message = f"*************{self.name}*************\n"
+        for i in self.ledger:            
+            message += f"{i['description'][:23]:<23}{i['amount']:>7.2f}\n"
+        total = self.get_balance()            
+        message += f"Total: {total:.2f}"       
+        return message
+
+
+
+
+
+
+
+def create_spend_chart(Categories):
+    chart = ("Percentage spent by category\n")
+    total_withdrawals = 0
+    withdrawals_per_cat = []
+    withdrawal_percentages= []
+    for category in Categories:
+        categorie_withdrawals = 0
+        for ledger_item in category.ledger:
+            if ledger_item["amount"] < 0:
+                total_withdrawals += abs(ledger_item["amount"])
+                categorie_withdrawals += abs(ledger_item["amount"])
+        withdrawals_per_cat.append(categorie_withdrawals)
+    for withdrawal in withdrawals_per_cat:        
+        withdrawal_percent = (withdrawal / total_withdrawals) * 100
+        withdrawal_percentages.append(int(withdrawal_percent // 10) * 10)
+
+    for i in range(100, -1, -10):
+        chart += f"{i:>3}|"
+        for p in withdrawal_percentages:
+            chart += " o " if p >= i else "   "
+        chart += " \n"
+
+    chart += "    " + "-" * (3 * len(Categories) + 1) + "\n"
+    
+
+    
+
+    category_names = []
+    for category in Categories:
+        category_names.append(category.name)
+    
+    max_cat_length = max(len(name) for name in category_names)
+
+    for i in range(max_cat_length):
+        chart += "     "
+        for name in category_names:
+            chart += f"{name[i] if i < len(name) else ' '}  "
+        if i < max_cat_length - 1:
+            chart += "\n"
+
+    return chart
+
+
+
+
+
+
+test = Category("Food")
+test1 = Category("Clothes")
+test2 = Category("Auto")
+test3 = Category("Fun")
+
+test.deposit(100, "Big money")
+test.withdraw(50)
+test.withdraw (20,"restaurant with many friends")
+test.transfer(20, test1)
+test1.deposit(150)
+test1.withdraw(60)
+test1.withdraw(30)
+test2.deposit(200)
+test2.withdraw(50)
+test2.withdraw(15)
+test3.deposit(100)
+test3.withdraw(65)
+
+test_categories = (test, test1, test2, test3)
+print(create_spend_chart(test_categories))
+
+** end of main.py **
+
